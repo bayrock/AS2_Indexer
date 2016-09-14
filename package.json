@@ -1,0 +1,20 @@
+{
+  "name": "audiosurf_indexer",
+  "version": "1.0.0",
+  "description": "Cache specific directories of music in Audiosurf 2.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "audiosurf"
+  ],
+  "author": "Bailey Chestnut",
+  "license": "MIT",
+  "dependencies": {
+    "coffee-script": "^1.10.0",
+    "commander": "^2.9.0",
+    "musicmetadata": "^2.0.4",
+    "sqlite3": "^3.1.4"
+  }
+}
