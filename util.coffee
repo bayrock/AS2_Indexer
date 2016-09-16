@@ -44,23 +44,48 @@ exports.CacheSong = (file) ->
 			console.log "Error parsing #{file}:\n#{err}"
 			return
 
+		meta.path = file
 		@_pushArtistToDB meta
+		#TODO: try adding a timer to prevent collisions
 
 exports._pushSongToDB = (song) ->
-	#select artist id and insert the song meta
-	#console.log "Cached song #{song.artist} - #{song.title}!"
+	db.serialize () =>
+		artist = song.artist[0]
+
+		db.each "SELECT artistid FROM artists WHERE name='#{artist}' LIMIT 1", (err, row) =>
+			errorstring = (e) -> "Error: #{e}\nskipping song #{artist} - #{song.title}"
+			if err or not row?
+				console.log errorstring(err)
+				return
+
+			query = db.prepare "INSERT INTO songs (duration, path, name, artistid, searchname, filemodifiedtime) VALUES (?,?,?,?,?, ?)"
+
+			try
+				duration = Math.floor song.duration
+				path = song.path
+				name = song.title
+				artistid = row.artistid
+				searchname = @_constructSearchName name, artist
+				filemodified = Math.floor(new Date() / 1000) #unix epoch
+			catch err
+				console.log errorstring(err) if err?
+
+			query.run(duration, path, name, artistid, searchname, filemodified)
+			query.finalize()
+			console.log "Cached song #{song.artist} - #{song.title}!"
 
 exports._pushArtistToDB = (song) ->
 	empty = ""
 	artist = if song.artist[0]? then song.artist[0] else empty
-	title = if song.title? then song.title else empty
 
+	errorstring = "Unable to cache artist for song: #{artist} - #{song.title}"
 	if artist is empty
-		console.log "Unable to cache artist for song: #{song}"
+		console.log errorstring
 		return
 
 	db.serialize () =>
 		db.each "SELECT name FROM artists WHERE name='#{artist}' LIMIT 1", (err, row) =>
+			console.log errorstring if err?
 			@_pushSongToDB song if row?
 		, (err, rows) =>
 			if rows is 0
@@ -69,3 +94,8 @@ exports._pushArtistToDB = (song) ->
 				query.finalize()
 				@_pushSongToDB song
 				console.log "Cached artist #{artist}!"
+
+exports._constructSearchName = (name, artist) ->
+	stripped_name = name.replace(/\s/g, '').toLowerCase()
+	stripped_artist = artist.replace(/\s/g, '').toLowerCase()
+	return "#{stripped_name}.#{stripped_artist}"

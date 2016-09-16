@@ -1,6 +1,6 @@
 {
   "name": "audiosurf_indexer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Cache specific directories of music in Audiosurf 2.",
   "main": "index.js",
   "scripts": {
