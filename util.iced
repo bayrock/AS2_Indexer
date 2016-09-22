@@ -20,7 +20,8 @@ exports.IndexDirectory = (dir) ->
 	await fs.readdir dir, defer err, list
 
 	if err?
-		console.log "Error reading directory: #{dir}"
+		console.log "Error reading directory: #{dir}\nExiting.."
+		process.exit(1) #graceless exit
 		return
 
 	console.log "Crawling #{dir}!"
@@ -85,9 +86,9 @@ exports._pushArtistToDB = (song) ->
 			@_pushSongToDB song if row?
 		, (err, rows) =>
 			if rows is 0
-				artistquery.run artist, () =>
-					console.log "Cached artist #{artist}!"
-					@_pushSongToDB song
+				await artistquery.run artist, defer()
+				console.log "Cached artist #{artist}!"
+				@_pushSongToDB song
 
 exports._constructSearchName = (name, artist) ->
 	stripped_name = name.replace(/\s/g, '').toLowerCase()
@@ -95,7 +96,7 @@ exports._constructSearchName = (name, artist) ->
 	return "#{stripped_name}.#{stripped_artist}"
 
 exports._finalizeSongQueries = (dir) ->
-	songquery.finalize (res) ->
+	songquery.finalize () ->
 		console.log "Finished caching directory #{dir} to Audiosurf!\nExiting.."
 
 songquery = db.prepare "INSERT INTO songs (duration, path, name, artistid, searchname, filemodifiedtime) VALUES (?,?,?,?,?, ?)"

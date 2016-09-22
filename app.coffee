@@ -18,8 +18,8 @@ if not /^(.+)\\([^\\]+)$/.test(program.dir)
 
 util.IndexDirectory program.dir
 
-process.on 'exit', (errCode) ->
-	if not errCode is 0
+process.on 'exit', (exitCode) ->
+	if not exitCode is 0
 		console.log "Fatal error occured caching songs!\nExiting.."
 		return
 	util._finalizeSongQueries(program.dir)
