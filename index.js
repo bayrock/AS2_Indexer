@@ -1,7 +1,7 @@
 
-/* interpret coffescript throughout the stack */
-var coffee = require('coffee-script');
-coffee.register();
+/* interpret iced coffescript throughout the stack */
+var iced = require('iced-coffee-script');
+iced.register();
 
 /* initialize app */
 require('./app');

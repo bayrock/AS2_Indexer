@@ -12,8 +12,14 @@ if not program.dir?
 	program.outputHelp()
 	return
 
-if not /^(.+)\\([^\\]+)$/i.test(program.dir)
+if not /^(.+)\\([^\\]+)$/.test(program.dir)
 	console.log "Invalid directory format!"
 	return
 
 util.IndexDirectory program.dir
+
+process.on 'exit', (errCode) ->
+	if not errCode is 0
+		console.log "Fatal error occured caching songs!\nExiting.."
+		return
+	util._finalizeSongQueries(program.dir)
